@@ -1,0 +1,171 @@
+/* Main viewport for the solar system, fixed size */
+.solarSystemViewport {
+  width: 650px;
+  height: 650px;
+  position: relative;
+  overflow: hidden;
+}
+
+.scalingContext {
+  position: absolute;
+  width: 85em;
+  height: 85em;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.container {
+  position: absolute;
+  width: 40em;
+  height: 40em;
+  top: calc((85em - 40em) / 2);
+  left: calc((85em - 40em) / 2);
+}
+
+.sun {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  border-radius: 50%;
+  /* Glow is applied here, so this div's size IS the sun's apparent size including glow */
+  box-shadow: 0 0 1.5em 0.2em rgba(255, 165, 0, 0.7), /* Inner, more defined */
+              0 0 3em 1em rgba(255, 200, 50, 0.5),   /* Middle */
+              0 0 6em 2.5em rgba(255, 100, 0, 0.35); /* Outer haze */
+  transition: transform 0.3s ease-out, box-shadow 0.4s ease-out;
+  z-index: 20;
+  cursor: pointer;
+  /* width & height set from data, e.g., 10em */
+}
+
+.sun img {
+  display: block;
+  /* Make the image slightly smaller than the .sun div to allow the glow to originate "around" it cleanly */
+  /* Adjust these percentages if needed. The goal is for the image to look like the core, and shadow the corona */
+  width: 70%;  /* Example: Image is 70% of the .sun div's size */
+  height: 70%; /* Example: Image is 70% of the .sun div's size */
+  border-radius: 50%;
+  object-fit: cover; /* Ensure image covers this smaller area */
+  animation: subtlePulse 5s infinite ease-in-out;
+  /* pointer-events: none; /* Keep this so hover is on .sun div */
+}
+
+.sun:hover {
+  transform: scale(1.02); /* Very subtle scale for the whole sun+glow */
+  box-shadow: 0 0 1.8em 0.3em rgba(255, 175, 20, 0.8),
+              0 0 3.5em 1.2em rgba(255, 210, 70, 0.6),
+              0 0 7em 3em rgba(255, 120, 20, 0.45);
+}
+
+
+.orbit {
+  position: absolute;
+  border-style: solid;
+  /* VISIBLE WHITE ORBIT PATHS */
+  border-color: rgba(200, 200, 220, 0.25) transparent transparent transparent; /* Base orbit color */
+  border-width: 0.05em 0.05em 0 0; /* Keep thin */
+  border-radius: 50%;
+  transition: border-color 0.3s ease;
+  z-index: 1; /* Orbits behind planets */
+  pointer-events: none; /* Orbit paths are not directly interactive */
+}
+
+/* Specific orbit colors can override the base if needed, but let's keep them subtle */
+.mercuryOrbit { border-color: rgba(180, 180, 190, 0.25) transparent transparent transparent; }
+.venusOrbit   { border-color: rgba(200, 190, 170, 0.25) transparent transparent transparent; }
+.earthOrbit   { border-color: rgba(170, 190, 220, 0.25) transparent transparent transparent; }
+.marsOrbit    { border-color: rgba(220, 170, 170, 0.25) transparent transparent transparent; }
+/* ... other planets ... */
+.moonOrbit    { border-color: rgba(190, 190, 200, 0.35) transparent transparent transparent; } /* Moon orbit slightly more visible */
+
+
+.celestialBody { /* This is the PLANET/MOON div */
+  position: absolute;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 0 0.3em rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  cursor: pointer;
+  z-index: 10; /* Planets on top of orbits */
+  /* All interactive properties are on this element */
+}
+
+.celestialBody:hover {
+  transform: scale(1.4); /* Increased hover scale for planets */
+  box-shadow: 0 0 1em rgba(255, 255, 255, 0.7), 0 0 2em rgba(200, 200, 255, 0.5);
+  z-index: 15; /* Hovered planet on top */
+}
+
+/* Highlight orbit path when its direct child celestialBody is hovered */
+.orbit:has(> .celestialBody:hover) {
+  border-color: rgba(255, 255, 255, 0.8) transparent transparent transparent !important; /* Bright white on hover */
+}
+
+
+.star {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0;
+  /* animation properties set inline via JS */
+}
+
+@keyframes orbitAnimation {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes subtlePulse { /* For Sun's image brightness */
+  0%, 100% { filter: brightness(100%) contrast(100%); }
+  50% { filter: brightness(115%) contrast(105%); }
+}
+
+@keyframes fadeInStar {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 0.7; transform: scale(1); }
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+  100% { opacity: 0.3; transform: scale(0.8); }
+}
+
+.popupTooltip {
+  position: absolute;
+  transform: translate(-50%, -125%);
+  background: rgba(20, 30, 55, 0.95); /* Slightly darker, more opaque */
+  color: #e8f0ff;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 190px;
+  text-align: left;
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+  white-space: normal;
+}
+
+.popupTooltip.visible {
+  opacity: 1;
+  transform: translate(-50%, -140%); /* Moves up a bit more when visible */
+}
+
+.popupTooltip h3 {
+  font-size: 13.5px;
+  color: #bDc8ff; /* Brighter title */
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+.popupTooltip p {
+  font-size: 11.5px;
+  margin: 0;
+  color: #d0e0ff;
+}
