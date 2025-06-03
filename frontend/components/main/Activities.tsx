@@ -87,15 +87,20 @@ const ActivitiesComponent: React.FC<ActivitiesComponentProps> = ({ activities })
       id="activities"
       className="w-full"
     >
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-10 md:mb-16 text-white px-4">
-        Club Activities
-      </h2>
-      <InfiniteImageSlider
-        slides={slidesData}
-        // slideDuration={4000} // Pass if your slider uses it
-        visibleSlides={Math.min(visibleSlidesCount, slidesData.length)}
-        onItemClick={handleSliderItemClick} // This prop should now be accepted
-      />
+<h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-10 md:mb-16 text-white px-4">
+  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-500">
+    What we Do As a Club?
+  </span>
+</h2>
+
+<div className="-mt-20"> {/* Moves the slider a bit upward */}
+  <InfiniteImageSlider
+    slides={slidesData}
+    visibleSlides={Math.min(visibleSlidesCount, slidesData.length)}
+    onItemClick={handleSliderItemClick}
+  />
+</div>
+
     </motion.div>
   );
 };

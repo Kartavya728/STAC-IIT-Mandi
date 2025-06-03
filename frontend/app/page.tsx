@@ -96,9 +96,12 @@ export default async function Home() {
           {homepageData.clubactivity && homepageData.clubactivity.length > 0 && (
             <ActivitiesComponent activities={homepageData.clubactivity} />
           )}
+          <div className="relative -top-16  "> {/* Added z-index to ensure this section is above others if needed */}
           {homepageData.fests && homepageData.fests.length > 0 && (
             <FestComponent fests={homepageData.fests} />
           )}
+          </div>
+
           {homepageData.projects && homepageData.projects.length > 0 && (
             <ProjectsComponent projects={homepageData.projects} />
           )}

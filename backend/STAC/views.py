@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Projects, ClubActivity, Achievements, Fests
-from .serializers import ProjectsSerializer, ClubActivitySerializer, AchievementsSerializer, FestsSerializer
+from ..HomePage.serializers import ProjectsSerializer, ClubActivitySerializer, AchievementsSerializer, FestsSerializer
 
 class HomePageData(APIView):
     def get(self, request):
