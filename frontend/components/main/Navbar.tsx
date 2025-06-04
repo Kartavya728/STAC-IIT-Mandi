@@ -32,7 +32,7 @@ const Navbar = () => {
         { href: "/pleiades", label: "PLEIADES" },
       ],
     },
-    { href: "#notifications", label: "Notifications" },
+    { href: "/notification", label: "Notifications" },
     { href: "http://stac.iitmandi.co.in/blog/", label: "Blogs", target: "_blank" },
     {
       label: "Gallery",
