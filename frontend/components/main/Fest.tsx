@@ -78,7 +78,7 @@ const FestComponent: React.FC<FestComponentProps> = ({ fests }) => {
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
           Our Vibrant
         </span>
-        <span className="text-white"> Fests</span>
+        <span className="text-neutral-900 dark:text-white"> Fests</span>
       </h1>
 
       {/* Card Container: All classes PRESERVED from your original. This implies single column. */}

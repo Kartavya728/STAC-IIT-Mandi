@@ -95,7 +95,7 @@ const AchievementsComponent: React.FC<AchievementsComponentProps> = ({ achieveme
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
             Our
           </span>
-          <span className="text-white"> Achievements</span> {/* Fixed color */}
+          <span className="text-neutral-900 dark:text-white"> Achievements</span> {/* Fixed color */}
         </motion.h2>
 
         <ul className="space-y-5 sm:space-y-6 relative z-10"> {/* Slightly reduced space-y */}

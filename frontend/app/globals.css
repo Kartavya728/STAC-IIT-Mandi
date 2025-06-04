@@ -127,7 +127,9 @@
 
   .dark {
     /* Dark Theme - Orange/Yellow Based */
-    --background: 20 14.3% 4.1%;
+ --background: 0 0% 0%;
+
+
     --foreground: 0 0% 98%;
 
     --card: 20 14.3% 5.5%;

@@ -101,7 +101,7 @@ const ActivitiesComponent: React.FC<ActivitiesComponentProps> = ({ activities })
           What We Do
         </span>
         {/* FIXED COLOR for the rest of the title. */}
-        <span className="text-white"> As a Club?</span>
+        <span className="text-neutral-900 dark:text-white"> As a Club?</span>
       </h2>
 
       <div className="relative -top-20">
