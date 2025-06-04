@@ -26,10 +26,10 @@ const Navbar = () => {
       label: "Events",
       href: "#events",
       subLinks: [
-        { href: "\astrax", label: "ASTRAX" },
-        { href: "#zenith", label: "ZENITH" },
-        { href: "#utkarsh", label: "UTKARSH" },
-        { href: "#pleiades", label: "PLEIADES" },
+        { href: "/astrax", label: "ASTRAX" },
+        { href: "/zenith", label: "ZENITH" },
+        { href: "/utkarsh", label: "UTKARSH" },
+        { href: "/pleiades", label: "PLEIADES" },
       ],
     },
     { href: "#notifications", label: "Notifications" },
@@ -38,13 +38,13 @@ const Navbar = () => {
       label: "Gallery",
       href: "#gallery",
       subLinks: [
-        { href: "#photos", label: "Photos" },
-        { href: "#videos", label: "Videos" },
+        { href: "/photos", label: "Photos" },
+        { href: "/videos", label: "Videos" },
       ],
     },
-    { href: "#team", label: "Team" },
-    { href: "#alumni", label: "Alumni" },
-    { href: "#iau", label: "IAU" },
+    { href: "\team", label: "Team" },
+    { href: "\alumni", label: "Alumni" },
+    { href: "\iau", label: "IAU" },
   ];
 
   const toggleMobileMenu = () => {
