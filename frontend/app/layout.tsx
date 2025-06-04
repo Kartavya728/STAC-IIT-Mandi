@@ -5,13 +5,18 @@ import "./globals.css";
 import StarsCanvas from "@/components/main/StarBackground";
 import Navbar from "@/components/main/Navbar";
 import Footer from "@/components/main/Footer";
+import NotificationPopup from "@/components/main/NotificationPopup"; // <<< IMPORT POPUP
 
 // Import your new theme provider
-import { MyThemeProvider } from "./theme-provider"; // Make sure this path is correct
+import { MyThemeProvider } from "./theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = { /* ... your metadata ... */ };
+export const metadata: Metadata = {
+  title: "STAC - Space Technology and Astronomy Cell",
+  description: "Official website of STAC, IIT Mandi.",
+  // Add more metadata as needed
+};
 
 export default function RootLayout({
   children,
@@ -25,15 +30,17 @@ export default function RootLayout({
       >
         <MyThemeProvider
           attribute="class"
-          defaultTheme="system" // Can be "light" or "dark" if "system" is problematic
+          defaultTheme="system"
           enableSystem
+          // disableTransitionOnChange // Consider adding this if theme transitions are causing issues
         >
           <StarsCanvas />
           <div className="relative z-10 flex flex-col min-h-screen">
-            <Navbar /> {/* Ensure Navbar contains ThemeToggle */}
+            <Navbar />
             <main className="flex-grow">{children}</main>
             <Footer />
           </div>
+          <NotificationPopup /> {/* <<< ADD POPUP COMPONENT HERE */}
         </MyThemeProvider>
       </body>
     </html>
