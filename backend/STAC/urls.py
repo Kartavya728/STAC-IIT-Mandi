@@ -1,6 +1,6 @@
 # STAC/urls.py
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include # Make sure include is imported
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -22,6 +22,8 @@ from CoreTeam.views import MemberDetailListAPIView
 
 # Import API views from Gallery app
 from Gallery.views import PhotoGalleryListAPIView, VideoGalleryListAPIView
+
+# No need to import notification views here if we are using include('notification.urls')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -46,15 +48,15 @@ urlpatterns = [
     path('api/gallery/photos/', PhotoGalleryListAPIView.as_view(), name='api_gallery_photos_list'),
     path('api/gallery/videos/', VideoGalleryListAPIView.as_view(), name='api_gallery_videos_list'),
 
+    # Notification API Endpoints
+    path('api/notifications/', include('notification.urls')), # <<< THIS LINE IS NOW CORRECTLY ADDED
+
     # --- App Page View Includes ---
     # (These include the app-specific urls.py files for their template-based pages)
     path('', include('Events.urls')), # For /astrax, /zenith, etc. (page views)
     path('', include('Alumni.urls')), # For /alumni (page view)
     path('coreteam/', include('CoreTeam.urls')), # For /coreteam/ (page view - note the prefix)
-                                                 # CoreTeam.urls has path('', views.CoreTeam,...)
-                                                 # so it needs a prefix here.
     path('gallery/', include('Gallery.urls')),   # For /gallery/photogallery, /gallery/videogallery
-                                                 # (page views - note the prefix)
 
     # Include other app URLs for page views as needed:
     # path('about/', include('AboutUs.urls')),
@@ -64,4 +66,4 @@ urlpatterns = [
 # Serve media and static files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) # Good to explicitly add static for dev
