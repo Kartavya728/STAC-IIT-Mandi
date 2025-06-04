@@ -28,7 +28,7 @@ const Footer = () => {
         // KEY CHANGE:
         // - Changed h-full w-full to h-screen w-screen to make the video element viewport-sized.
         // - Ensured object-cover so the video content fills these dimensions.
-        className="absolute top-[-400px] h-screen w-screen left-0 z-[-1] object-cover"
+        className="absolute top-[-400px] h-screen w-screen left-0 z-[-1] object-cover hue-rotate-[140deg]"
       >
         <source src="/blackhole.webm" type="video/webm" />
       </video>

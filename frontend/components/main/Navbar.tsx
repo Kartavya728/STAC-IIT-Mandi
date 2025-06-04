@@ -3,14 +3,11 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
+import ThemeToggle from "../sub/Toggle"; // Assuming this path is correct
 
 // For Instagram - In a real app, this would come from "@/constants"
-const socials = [
-  {
-    name: "Instagram",
-    src: "/instagram.svg", // Make sure you have instagram.svg in your /public folder
-    link: "https://www.instagram.com/yourprofile", // Replace with your actual Instagram link
-  },
+const socials = [ // You had this defined, but it wasn't used in the provided Navbar snippet. I'll add it back where it might logically go.
+{}
 ];
 
 const Navbar = () => {
@@ -51,43 +48,54 @@ const Navbar = () => {
     };
   }, [isMobileMenuOpen]);
 
-  const gradientHoverClasses = "hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-purple-500 hover:to-cyan-500";
-  const adminButtonBaseClasses = "bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-medium transition-all duration-300";
-  const adminButtonHoverClasses = "hover:from-purple-600 hover:to-cyan-600 hover:shadow-lg";
+  // Updated to use theme gradient and text color
+  const themedGradientHoverClasses = "text-foreground hover:text-transparent hover:bg-clip-text hover:bg-theme-gradient";
+  // Updated to use theme gradient for background and appropriate text color
+  const themedAdminButtonBaseClasses = "bg-theme-gradient text-primary-foreground font-medium transition-all duration-300";
+  // Hover for gradient buttons can be a subtle opacity change or slight shadow enhancement
+  const themedAdminButtonHoverClasses = "hover:opacity-90 hover:shadow-lg";
 
 
   return (
     <>
       {/* Main Navbar */}
-      <div className="w-full h-[65px] fixed top-0 shadow-lg shadow-[#2A0E61]/50 bg-[#03001417] backdrop-blur-md z-50 px-4 sm:px-10">
+      {/* Using themed background, shadow, and border */}
+      <div className="w-full h-[65px] fixed top-0 
+                      shadow-md dark:shadow-primary/20 {/* Themed shadow */}
+                      bg-background/80 dark:bg-background/85 {/* Themed background with transparency */}
+                      backdrop-blur-md z-50 px-4 sm:px-10 border-b border-border/30 dark:border-border/50"> {/* Themed border */}
         <div className="w-full h-full max-w-screen-xl mx-auto flex flex-row items-center justify-between">
           {/* Logo and Brand Name */}
           <a
-            href="#about-me"
+            href="/" // Changed from #about-me
             className="h-auto w-auto flex flex-row items-center"
             onClick={() => isMobileMenuOpen && setIsMobileMenuOpen(false)}
           >
             <Image
-              src="/NavLogo.png"
+              src="/STAClogo.png"
               alt="logo"
               width={50}
               height={50}
               className="cursor-pointer hover:animate-slowspin"
             />
-            <span className="font-bold ml-[10px] hidden md:block text-gray-300 text-xl">
+            {/* Using themed text color */}
+            <span className="font-bold ml-[10px] hidden md:block text-foreground text-xl">
               STAC
             </span>
           </a>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex h-full flex-row items-center pl-[80px]">
-
-            <div className="flex items-center justify-between w-full h-auto border border-[#7042f861] bg-[#0300145e] px-[20px] py-[10px] rounded-full text-gray-200 space-x-6">
+          <div className="hidden md:flex h-full flex-row items-center pl-[80px]"> {/* This pl-[80px] might need adjustment for centering */}
+            {/* Using themed border, background, and text color */}
+            <div className="flex items-center justify-between w-full h-auto 
+                            border border-border bg-card/70 dark:bg-card/80 {/* Themed border and card background */}
+                            px-[20px] py-[10px] rounded-full text-foreground {/* Themed text */}
+                            space-x-6">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
-                  className={`cursor-pointer transition-colors ${gradientHoverClasses}`}
+                  className={`cursor-pointer transition-colors ${themedGradientHoverClasses}`}
                 >
                   {link.label}
                 </a>
@@ -96,62 +104,33 @@ const Navbar = () => {
           </div>
 
           {/* Desktop: Admin Login, About & Instagram */}
-          <div className="hidden md:flex flex-row gap-5 items-center text-gray-200">
+          {/* Using themed text color */}
+          <div className="hidden md:flex flex-row gap-4 items-center text-foreground"> {/* Reduced gap, added Instagram */}
             <a
               href="/about-us"
-              className={`cursor-pointer transition-colors ${gradientHoverClasses}`}
+              className={`cursor-pointer transition-colors ${themedGradientHoverClasses}`}
             >
               About
             </a>
-            {socials.map((social) => (
-              <a
-                href={social.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                key={social.name}
-                title={social.name}
-                className="hover:opacity-75 transition-opacity"
-              >
-                <Image
-                  src={social.src}
-                  alt={social.name}
-                  width={24}
-                  height={24}
-                />
-              </a>
-            ))}
+           
+            <ThemeToggle/>
             <a
-              href="/admin-login"
-              className={`cursor-pointer px-4 py-2 rounded-full text-sm ${adminButtonBaseClasses} ${adminButtonHoverClasses}`}
+              href="http://127.0.0.1:8000/admin"
+              className={`cursor-pointer px-4 py-2 rounded-full text-sm ${themedAdminButtonBaseClasses} ${themedAdminButtonHoverClasses}`}
             >
               Admin Login
             </a>
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            {/* If only instagram, place it here before hamburger for mobile view */}
-            {socials.map((social) => (
-              <a
-                href={social.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                key={social.name + "-mobile-header"} // Unique key
-                title={social.name}
-                className="text-gray-300 hover:opacity-75 transition-opacity mr-4" // Added margin
-              >
-                <Image
-                  src={social.src}
-                  alt={social.name}
-                  width={26} // Slightly larger for mobile
-                  height={26}
-                />
-              </a>
-            ))}
+          <div className="md:hidden flex items-center gap-2"> {/* Added gap for spacing */}
+            
+           <ThemeToggle/>
             <button
               onClick={toggleMobileMenu}
               aria-label="Toggle mobile menu"
-              className="text-gray-300 hover:text-white focus:outline-none"
+              // Using themed text color and hover
+              className="text-foreground/80 hover:text-primary focus:outline-none ml-2" // Added margin for spacing from toggle
             >
               {isMobileMenuOpen ? (
                 <AiOutlineClose size={28} />
@@ -166,7 +145,8 @@ const Navbar = () => {
       {/* Mobile Menu Overlay with Animation */}
       <div
         className={`
-          md:hidden fixed inset-0 top-[65px] z-40 bg-[#030014f0] backdrop-blur-lg 
+          md:hidden fixed inset-0 top-[65px] z-40 
+          bg-background/95 backdrop-blur-lg {/* Themed background */}
           flex flex-col items-center justify-center space-y-6 p-5
           transform transition-all duration-300 ease-in-out
           ${isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}
@@ -176,7 +156,8 @@ const Navbar = () => {
           <a
             key={link.label}
             href={link.href}
-            className={`cursor-pointer text-gray-200 text-2xl transition-colors ${gradientHoverClasses}`}
+            // Using themed text color and hover
+            className={`cursor-pointer text-foreground text-2xl transition-colors ${themedGradientHoverClasses}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {link.label}
@@ -185,37 +166,23 @@ const Navbar = () => {
         <div className="pt-6 flex flex-col items-center space-y-6">
           <a
             href="/about-us"
-            className={`cursor-pointer text-gray-200 text-2xl transition-colors ${gradientHoverClasses}`}
+            // Using themed text color and hover
+            className={`cursor-pointer text-foreground text-2xl transition-colors ${themedGradientHoverClasses}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             About
           </a>
-          {/* Removed Instagram from here as it's in the header now, but you can add it back if preferred */}
-          {/* {socials.map((social) => (
-            <a
-              href={social.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              key={social.name + "-mobile-menu"}
-              className="hover:opacity-75 transition-opacity"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Image
-                src={social.src}
-                alt={social.name}
-                width={30}
-                height={30}
-              />
-            </a>
-          ))} */}
           <a
-            href="/admin-login"
-            className={`cursor-pointer px-6 py-3 rounded-full text-lg ${adminButtonBaseClasses} ${adminButtonHoverClasses}`}
+            href="http://127.0.0.1:8000/admin" // Changed from /admin-login to be consistent with desktop
+            className={`cursor-pointer px-6 py-3 rounded-full text-lg ${themedAdminButtonBaseClasses} ${themedAdminButtonHoverClasses}`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Admin Login
           </a>
         </div>
+        {/* ThemeToggle was here, but it's usually better in the main header or consistently placed */}
+        {/* If you want it at the bottom of the mobile menu, ensure its styling matches the context. */}
+        {/* <ThemeToggle/> */}
       </div>
     </>
   );

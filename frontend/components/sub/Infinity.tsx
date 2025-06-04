@@ -1,7 +1,7 @@
-// components/sub/Infinity.tsx (or your path to InfiniteImageSlider.tsx)
+// components/sub/Infinity.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback, CSSProperties, useRef } from 'react';
+import React, { useState, useEffect, useCallback, CSSProperties } from 'react'; // Removed useRef as it's not used after changes
 
 interface Slide {
   id: string | number;
@@ -16,6 +16,7 @@ export interface InfiniteImageSliderProps {
   slideDuration?: number;
   visibleSlides?: number;
   onItemClick?: (id: string | number) => void;
+  borderColorClass?: string; // New prop for customizable border color
 }
 
 const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
@@ -23,27 +24,15 @@ const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
   slideDuration = 3500,
   visibleSlides = 3,
   onItemClick,
+  borderColorClass = "border-theme-primary", // Default to theme-primary
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isClickTransition, setIsClickTransition] = useState(false);
   const numSlides = slides.length;
-  const clickTransitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const normalTransitionDuration = 1000; // Normal animation duration
-  const instantTransitionDuration = 50; // For "instant" click
+  const transitionDurationMs = 700;
 
-  const changeSlide = useCallback((newIndex: number, isClicked: boolean = false) => {
-    if (isClicked) {
-      setIsClickTransition(true);
-      setCurrentIndex(newIndex);
-      if (clickTransitionTimeoutRef.current) clearTimeout(clickTransitionTimeoutRef.current);
-      clickTransitionTimeoutRef.current = setTimeout(() => {
-        setIsClickTransition(false);
-      }, instantTransitionDuration + 50);
-    } else {
-      setIsClickTransition(false);
-      setCurrentIndex(newIndex);
-    }
+  const changeSlide = useCallback((newIndex: number) => {
+    setCurrentIndex(newIndex);
   }, []);
 
   const nextSlide = useCallback(() => {
@@ -55,20 +44,19 @@ const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
     const timer = setInterval(nextSlide, slideDuration);
     return () => {
       clearInterval(timer);
-      if (clickTransitionTimeoutRef.current) clearTimeout(clickTransitionTimeoutRef.current);
     };
   }, [slideDuration, nextSlide, numSlides]);
 
   const handleSlideClick = (slideId: string | number, index: number) => {
-    changeSlide(index, true);
+    changeSlide(index);
     if (onItemClick) onItemClick(slideId);
   };
 
   if (!slides || numSlides === 0) {
-    return <div className="flex items-center justify-center h-64 text-gray-500">No slides to display.</div>;
+    return <div className="flex items-center justify-center h-64 text-theme-text-subtle">No slides to display.</div>;
   }
 
-  const actualVisibleSlides = visibleSlides % 2 === 0 ? (visibleSlides > 0 ? visibleSlides - 1 : 3) : visibleSlides;
+  const actualVisibleSlides = (visibleSlides > 0 && visibleSlides % 2 !== 0) ? visibleSlides : (visibleSlides > 1 && visibleSlides % 2 === 0 ? visibleSlides -1 : 3) ;
 
   const getItemStyle = (index: number): CSSProperties => {
     let offset = index - currentIndex;
@@ -86,37 +74,39 @@ const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
 
     const isCenter = offset === 0;
     const isImmediateSide = Math.abs(offset) === 1;
-    const isOuterVisibleSideForFiveView = actualVisibleSlides === 5 && Math.abs(offset) === 2;
+    const isOuterVisibleSide = actualVisibleSlides >= 5 && Math.abs(offset) === 2;
+    const isEvenFurtherVisibleSide = actualVisibleSlides >= 7 && Math.abs(offset) === 3;
 
-    // Original center scale was ~1.05. 1.5x of that is ~1.575. Let's try 1.5 or 1.6.
-    const centerScale = 1.5; // Significantly larger center image
+    const centerScale = 1.5; 
 
     if (isCenter) {
-      dynamicTransforms = `scale(${centerScale}) translateX(0%) translateZ(50px) rotateY(0deg)`; // Added small translateZ to bring it forward
+      dynamicTransforms = `scale(${centerScale}) translateX(0%) translateZ(60px) rotateY(0deg)`;
       opacity = 1;
-      zIndex = numSlides + 2; // Higher z-index
+      zIndex = numSlides + 2;
       filter = 'blur(0px)';
     } else if (isImmediateSide) {
       const sideDirection = Math.sign(offset);
       opacity = 1;
       zIndex = numSlides;
       filter = 'blur(1px)';
-      // Need to push side images further out to accommodate larger center image
-      if (actualVisibleSlides === 3) { // Mobile: 3-slide view
-        // Pushing them further, scale down a bit more
+      if (actualVisibleSlides === 3) {
         dynamicTransforms = `scale(0.75) translateX(${sideDirection * 110}%) translateZ(-180px) rotateY(${-sideDirection * 25}deg)`;
-      } else { // Laptop: 5-slide view (offset +/-1)
-        // Pushing them further, scale down a bit more
+      } else {
         dynamicTransforms = `scale(0.8) translateX(${sideDirection * 95}%) translateZ(-150px) rotateY(${-sideDirection * 22}deg)`;
       }
-    } else if (isOuterVisibleSideForFiveView) { // Laptop: 5-slide view, "half-out" items (offset +/-2)
+    } else if (isOuterVisibleSide) {
       const sideDirection = Math.sign(offset);
-      // These also need to be pushed further out
       dynamicTransforms = `scale(0.7) translateX(${sideDirection * 170}%) translateZ(-280px) rotateY(${-sideDirection * 35}deg)`;
-      opacity = 0.6; // Keep opacity reasonable for "half-out"
+      opacity = 0.7;
       zIndex = numSlides - 1;
-      filter = 'blur(3px)';
-    } else { // Far out slides
+      filter = 'blur(2px)';
+    } else if (isEvenFurtherVisibleSide) {
+       const sideDirection = Math.sign(offset);
+       dynamicTransforms = `scale(0.6) translateX(${sideDirection * 230}%) translateZ(-380px) rotateY(${-sideDirection * 40}deg)`;
+       opacity = 0.4;
+       zIndex = numSlides - 2;
+       filter = 'blur(3px)';
+    } else {
       const sideDirection = Math.sign(offset) || 1;
       dynamicTransforms = `scale(0.5) translateX(${sideDirection * 250}%) translateZ(-400px) rotateY(${-sideDirection * 45}deg)`;
       opacity = 0;
@@ -130,30 +120,23 @@ const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
       zIndex: zIndex,
       filter: filter,
       pointerEvents: opacity < 0.1 ? 'none' : 'auto',
-      transitionDuration: isClickTransition ? `${instantTransitionDuration}ms` : `${normalTransitionDuration}ms`,
-      transitionProperty: 'all',
-      transitionTimingFunction: isClickTransition ? 'linear' : 'cubic-bezier(0.35,0,0.25,1)',
+      transition: `all ${transitionDurationMs}ms cubic-bezier(0.35, 0, 0.25, 1)`,
     };
   };
 
-  const gradientBorderOuterClasses = "p-1 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-xl shadow-lg cursor-pointer";
-  const innerContentBgClasses = "bg-neutral-800 rounded-[calc(0.75rem-4px)] w-full h-full overflow-hidden flex flex-col items-center justify-center relative";
-
-  // Slide dimensions remain the same; the scaling will make the center one appear larger.
-  // If these base dimensions are too small for a 1.5x scaled center image to look good,
-  // you might need to increase these base dimensions slightly.
-  const slideDimensionClasses = `
-    w-[280px] h-[160px] 
-    sm:w-[300px] sm:h-[170px] 
-    md:w-[380px] md:h-[215px] 
-    lg:w-[450px] lg:h-[255px] 
+  const slideItemBaseClasses = `
+    cursor-pointer shadow-xl overflow-hidden rounded-xl // Keep rounded corners for the item
+    ${borderColorClass} border-[2px] // THEME COLOR BORDER of 10px
   `;
 
-  // Viewport height might need to be increased if the 1.5x scaled center image is too tall.
-  // Original: h-[450px] sm:h-[480px] md:h-[500px] lg:h-[520px]
-  // Let's try increasing it slightly.
-  const viewportHeightClasses = "h-[480px] sm:h-[500px] md:h-[530px] lg:h-[560px]";
+  const slideDimensionClasses = `
+    w-[280px] h-[160px]
+    sm:w-[300px] sm:h-[170px]
+    md:w-[380px] md:h-[215px]
+    lg:w-[450px] lg:h-[255px]
+  `;
 
+  const viewportHeightClasses = "h-[480px] sm:h-[500px] md:h-[530px] lg:h-[560px]"; 
 
   return (
     <div className="flex flex-col items-center justify-center w-full box-border bg-transparent">
@@ -167,13 +150,15 @@ const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
             const itemStyle = getItemStyle(index);
 
             return (
+              // This is now the main slide item that gets the border and transformations
               <div
                 key={slide.id}
                 className={`
-                  absolute top-1/2 left-1/2 
+                  absolute top-1/2 left-1/2
                   transform-gpu
+                  bg-theme-background // Add a background to prevent content behind from showing through border gaps
                   ${slideDimensionClasses}
-                  ${gradientBorderOuterClasses}
+                  ${slideItemBaseClasses} // Apply border and base styles here
                 `}
                 style={itemStyle}
                 onClick={() => handleSlideClick(slide.id, index)}
@@ -181,41 +166,40 @@ const InfiniteImageSlider: React.FC<InfiniteImageSliderProps> = ({
                 tabIndex={isCenterSlide ? 0 : -1}
                 aria-label={slide.title || `View slide ${index + 1}`}
               >
-                <div className={innerContentBgClasses}>
-                  <img
-                    src={slide.imageUrl}
-                    alt={slide.altText || `Image for ${slide.title || 'slide ' + (index + 1)}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  {/* Text overlay will be scaled with the parent due to transform. Font sizes might need adjustment if text becomes too large. */}
-                  <div className={`
-                      absolute inset-0 flex flex-col items-center justify-center p-3 sm:p-4 
-                      bg-black/40  
-                      transition-opacity duration-700 ease-in-out 
-                      ${isCenterSlide ? 'opacity-100 delay-300' : 'opacity-0'} 
-                  `}>
-                    {slide.title && (
-                      <h2 className={`
-                        text-lg sm:text-xl md:text-2xl font-bold text-white text-center mb-1 sm:mb-2
-                        transition-all duration-500 ease-out
-                        ${isCenterSlide ? 'opacity-100 translate-y-0 delay-400' : 'opacity-0 translate-y-5'}
-                        text-shadow drop-shadow-lg
-                      `}>
-                        {slide.title}
-                      </h2>
-                    )}
-                    {slide.description && (
-                      <p className={`
-                        text-xs sm:text-sm text-neutral-200 text-center max-w-xs 
-                        line-clamp-2 sm:line-clamp-3 
-                        transition-all duration-500 ease-out
-                        ${isCenterSlide ? 'opacity-100 translate-y-0 delay-500' : 'opacity-0 translate-y-5'}
-                        text-shadow-sm drop-shadow-md
-                      `}>
-                        {slide.description}
-                      </p>
-                    )}
-                  </div>
+                {/* Image fills the bordered container */}
+                <img
+                  src={slide.imageUrl}
+                  alt={slide.altText || `Image for ${slide.title || 'slide ' + (index + 1)}`}
+                  className="absolute inset-0 w-full h-full object-cover" // Image itself doesn't need border or rounding now
+                />
+                {/* Text overlay remains the same */}
+                <div className={`
+                    absolute inset-0 flex flex-col items-center justify-center p-3 sm:p-4
+                    bg-black/50 dark:bg-black/60
+                    transition-opacity duration-700 ease-in-out
+                    ${isCenterSlide ? 'opacity-100 delay-300' : 'opacity-0'}
+                `}>
+                  {slide.title && (
+                    <h2 className={`
+                      text-lg sm:text-xl md:text-2xl font-bold text-white text-center mb-1 sm:mb-2
+                      transition-all duration-500 ease-out
+                      ${isCenterSlide ? 'opacity-100 translate-y-0 delay-400' : 'opacity-0 translate-y-5'}
+                      [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]
+                    `}>
+                      {slide.title}
+                    </h2>
+                  )}
+                  {slide.description && (
+                    <p className={`
+                      text-xs sm:text-sm text-gray-200 dark:text-gray-300 text-center max-w-xs
+                      line-clamp-2 sm:line-clamp-3
+                      transition-all duration-500 ease-out
+                      ${isCenterSlide ? 'opacity-100 translate-y-0 delay-500' : 'opacity-0 translate-y-5'}
+                      [text-shadow:0_1px_2px_rgba(0,0,0,0.4)]
+                    `}>
+                      {slide.description}
+                    </p>
+                  )}
                 </div>
               </div>
             );

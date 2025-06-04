@@ -1,46 +1,41 @@
+// src/components/main/Achievements.tsx
 "use client";
-
 import React, { useRef } from 'react';
-import { Achievement } from '@/app/page'; // Assuming this type definition is correct
-import { LinkPreview } from '../ui/link-preview'; // Using your actual path
+import { Achievement } from '@/app/page';
+import { LinkPreview } from '../ui/link-preview'; // Ensure this path is correct
 import { motion, useInView } from 'framer-motion';
-import { StarIcon, AcademicCapIcon, TrophyIcon } from '@heroicons/react/24/outline';
+import { StarIcon, AcademicCapIcon, TrophyIcon } from '@heroicons/react/24/outline'; // Using outline for consistency
 
-// Container animation (remains the same)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      duration: 0.5,
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
+      duration: 0.4, // Slightly quicker
+      staggerChildren: 0.1, // Stagger list items
+      delayChildren: 0.1,  // Start staggering sooner
     },
   },
 };
 
-// Card animation - UPDATED FOR FADE-IN/OUT
 const cardVariants = {
-  hidden: {
-    opacity: 0,
-    // y: 20, // Optional: if you want a very subtle upward drift on fade-in
-  },
+  hidden: { opacity: 0, x: -20 }, // Subtle slide-in from left
   visible: {
     opacity: 1,
-    // y: 0,  // Optional: if you used 'y' in hidden state
+    x: 0,
     transition: {
-      duration: 0.5, // Controls the speed of the fade
-      ease: "easeInOut", // A common easing for smooth transitions
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1], // Custom ease
     },
   },
 };
 
-// Random Icon Generator
+// Random Icon Generator - Themed Icons
 const getRandomIcon = (id: number) => {
   const icons = [
-    <StarIcon key="star" className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400 mr-2 sm:mr-3 flex-shrink-0" />,
-    <AcademicCapIcon key="cap" className="w-5 h-5 sm:w-6 sm:h-6 text-sky-400 mr-2 sm:mr-3 flex-shrink-0" />,
-    <TrophyIcon key="trophy" className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 mr-2 sm:mr-3 flex-shrink-0" />,
+    <StarIcon key="star" className="w-5 h-5 sm:w-6 sm:h-6 text-theme-secondary mr-2 sm:mr-3 flex-shrink-0" />, // Yellowish theme color
+    <AcademicCapIcon key="cap" className="w-5 h-5 sm:w-6 sm:h-6 text-theme-primary mr-2 sm:mr-3 flex-shrink-0" />, // Orange theme color
+    <TrophyIcon key="trophy" className="w-5 h-5 sm:w-6 sm:h-6 text-theme-accent-1 mr-2 sm:mr-3 flex-shrink-0" />, // Accent theme color
   ];
   return icons[id % icons.length];
 };
@@ -51,93 +46,119 @@ interface AchievementsComponentProps {
 
 const AchievementsComponent: React.FC<AchievementsComponentProps> = ({ achievements }) => {
   const componentRef = useRef<HTMLDivElement>(null);
+  // Trigger when 10% of the main section is in view
   const isComponentInView = useInView(componentRef, { once: false, amount: 0.1 });
 
+  // --- EMPTY STATE ---
   if (!achievements || achievements.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950" id="achievements">
-        <p className="text-white/70">No achievements to display at the moment.</p>
-      </div>
+      <section // Changed to section
+        id="achievements"
+        className="min-h-[60vh] flex items-center justify-center p-4 bg-theme-background"
+      >
+        <p className="text-xl sm:text-2xl text-theme-text-subtle text-center">
+          No achievements to display yet.
+        </p>
+      </section>
     );
   }
 
+  // --- MAIN COMPONENT ---
   return (
-    <motion.div
+    <motion.section // Changed to section
       ref={componentRef}
-      className="py-16 sm:py-24 flex items-center justify-center p-4 bg-gray-950"
       id="achievements"
-      variants={containerVariants}
-      initial="hidden"
-      animate={isComponentInView ? "visible" : "hidden"}
+      // Professional padding, bg-theme-background inherited or set on body
+      className="py-16 sm:py-20 md:py-24 lg:py-28 bg-theme-background flex items-center justify-center px-4"
+      // Variants moved to the inner content box for better animation control relative to its appearance
     >
-      <div
-        className="w-full max-w-4xl p-6 sm:p-8 md:p-10 rounded-2xl shadow-2xl relative border border-purple-500/30 bg-gradient-to-br from-slate-900 via-purple-950/50 to-blue-950/50 backdrop-blur-md text-white"
+      {/* Content Box with Themed Styling and Animation */}
+      <motion.div
+        className="w-full max-w-3xl lg:max-w-4xl p-6 sm:p-8 md:p-10 rounded-2xl shadow-xl dark:shadow-2xl relative
+                   border border-theme-border/70 dark:border-theme-border/40
+                   bg-theme-background/80 dark:bg-slate-900/60 backdrop-blur-md text-theme-text"
+        // Themed background: theme background with some opacity for glassmorphism, or a subtle gradient
+        // Example subtle gradient: bg-gradient-to-br from-theme-background/80 via-theme-accent-1/5 to-theme-background/80 dark:from-slate-900/70 dark:via-theme-primary/10 dark:to-slate-900/70
+        variants={containerVariants} // Apply container variants here for children staggering
+        initial="hidden"
+        animate={isComponentInView ? "visible" : "hidden"}
+        viewport={{ once: false, amount: 0.2 }} // Trigger when 20% of this box is visible
       >
         <motion.h2
-          className="relative z-10 text-4xl sm:text-5xl font-bold text-center mb-10 sm:mb-12 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400"
-          // Title animation can remain pop-up or be changed to fade as well if desired
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
-          animate={isComponentInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ duration: 0.6, ease: 'circOut', delay: 0.1 }}
+          className="relative z-10 text-4xl sm:text-5xl font-bold text-center mb-10 sm:mb-12 md:mb-16"
+          // Title animation
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }} // Animation controlled by parent's isInView
+          transition={{ duration: 0.5, ease: 'circOut', delay: 0.1 }} // Delay relative to parent animation
         >
-          Our Achievements
+          {/* Themed Title */}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
+            Our
+          </span>
+          <span className="text-white"> Achievements</span> {/* Fixed color */}
         </motion.h2>
 
-        <ul className="space-y-6 sm:space-y-8 relative z-10">
+        <ul className="space-y-5 sm:space-y-6 relative z-10"> {/* Slightly reduced space-y */}
           {achievements.map((achievement, index) => (
             <AchievementCard key={achievement.id} achievement={achievement} index={index} />
           ))}
         </ul>
-      </div>
-    </motion.div>
+      </motion.div>
+    </motion.section>
   );
 };
 
 interface AchievementCardProps {
   achievement: Achievement;
-  index: number;
+  index: number; // index can be used for staggered animation if cardVariants are applied by parent
 }
 
 const AchievementCard: React.FC<AchievementCardProps> = ({ achievement, index }) => {
   const cardRef = useRef<HTMLLIElement>(null);
-  const isInView = useInView(cardRef, { once: false, amount: 0.3 });
+  // Card animation can be triggered by individual visibility or by parent staggering.
+  // For simplicity with parent staggering, we might not need individual useInView here if parent handles it.
+  // const isInView = useInView(cardRef, { once: false, amount: 0.3 });
 
   return (
     <motion.li
       ref={cardRef}
-      variants={cardVariants} // Uses the UPDATED cardVariants for fade effect
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      // Hover animation remains the same (pop/scale effect on hover)
+      variants={cardVariants} // These variants will be triggered by the parent motion.div (ul's container)
+      // initial="hidden" // Handled by parent
+      // animate={isInView ? "visible" : "hidden"} // Handled by parent staggering
       whileHover={{
-        y: -6,
-        scale: 1.03,
-        boxShadow: "0px 8px 25px rgba(168, 85, 247, 0.3), 0px 0px 15px rgba(0, 255, 255, 0.25)",
-        transition: { type: 'spring', stiffness: 250, damping: 15 },
+        y: -5, // Subtle lift
+        scale: 1.015, // Subtle scale
+        // Themed shadow glow - ensure --theme-primary-glow is defined
+        boxShadow: "0px 6px 20px rgba(var(--rgb-theme-primary), 0.25), 0px 0px 12px rgba(var(--rgb-theme-accent-1), 0.2)",
+        transition: { type: 'spring', stiffness: 300, damping: 20 },
       }}
-      className="relative group transition-all duration-300" // overflow-hidden was removed previously
+      className="relative group" // Removed transition-all, motion handles it. overflow-hidden might be needed if children visually overflow on hover.
     >
       <div
         className="
-          block p-5 sm:p-6 rounded-xl
-          bg-black/40 group-hover:bg-black/50
-          border border-slate-700 group-hover:border-purple-500/70
-          backdrop-blur-[2px] group-hover:backdrop-blur-[5px]
-          transition-all duration-300 ease-out
-          focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-opacity-75
-          shadow-lg hover:shadow-xl
+          block p-4 sm:p-5 rounded-lg sm:rounded-xl  // Slightly reduced padding, responsive rounding
+          bg-theme-background/60 dark:bg-slate-800/50   // Card item background
+          group-hover:bg-theme-background/70 dark:group-hover:bg-slate-800/70 // Hover background
+          border border-theme-border/50 dark:border-slate-700/40       // Card item border
+          group-hover:border-theme-primary/80 dark:group-hover:border-theme-primary-dark/80 // Hover border
+          backdrop-blur-sm group-hover:backdrop-blur-md       // Glassmorphism
+          transition-all duration-200 ease-out              // Smooth transition for non-motion properties
+          shadow-md group-hover:shadow-lg                     // Subtle shadow
         "
       >
-        <div className="flex items-start sm:items-center mb-2 sm:mb-3">
+        <div className="flex items-start sm:items-center mb-2"> {/* Reduced bottom margin */}
           {getRandomIcon(achievement.id)}
           <LinkPreview
             url={achievement.link}
-            className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-100 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-cyan-400 transition-colors duration-300"
+            // Themed LinkPreview text and hover effect
+            className="text-md sm:text-lg lg:text-xl font-medium text-theme-text group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-orange-500 group-hover:to-yellow-500 transition-colors duration-300"
+            // If LinkPreview accepts a 'previewClassName' or similar for its popup, theme that too.
           >
             {achievement.achievement}
           </LinkPreview>
         </div>
-        <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-purple-500 to-cyan-500 group-hover:w-full transition-all duration-500 ease-out"></span>
+        {/* Themed underline hover effect */}
+        <span className="absolute bottom-0 left-0 h-[1.5px] w-0 bg-gradient-to-r from-orange-500 to-yellow-500 group-hover:w-full transition-all duration-400 ease-out"></span>
       </div>
     </motion.li>
   );

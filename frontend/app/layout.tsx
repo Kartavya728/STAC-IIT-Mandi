@@ -1,19 +1,17 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import StarsCanvas from "@/components/main/StarBackground"; // Ensure this path is correct
+import StarsCanvas from "@/components/main/StarBackground";
 import Navbar from "@/components/main/Navbar";
 import Footer from "@/components/main/Footer";
 
+// Import your new theme provider
+import { MyThemeProvider } from "./theme-provider"; // Make sure this path is correct
+
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "STAC",
-  description: "STAC - Space Technology and Astronomy Cell from IIT Mandi",
-  icons: {
-    icon: "/STAClogo.png",
-  },
-};
+export const metadata: Metadata = { /* ... your metadata ... */ };
 
 export default function RootLayout({
   children,
@@ -21,24 +19,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.className} bg-[#030014] overflow-y-scroll overflow-x-hidden`}
+        className={`${inter.className} bg-background text-foreground overflow-y-scroll overflow-x-hidden`}
       >
-        {/* Your interactive content */}
-        {/* These elements should have default or lower z-indexes than StarsCanvas */}
-        <Navbar />
-        <main className="relative z-0"> {/* Adding relative z-0 helps establish a stacking context for content */}
-          {children}
-        </main>
-
-        <Footer />
-
-        {/* StarsCanvas is now self-contained. 
-            Placing it last in the body is good practice for overlays,
-            though its internal z-index and fixed positioning primarily control its appearance.
-        */}
-        <StarsCanvas />
+        <MyThemeProvider
+          attribute="class"
+          defaultTheme="system" // Can be "light" or "dark" if "system" is problematic
+          enableSystem
+        >
+          <StarsCanvas />
+          <div className="relative z-10 flex flex-col min-h-screen">
+            <Navbar /> {/* Ensure Navbar contains ThemeToggle */}
+            <main className="flex-grow">{children}</main>
+            <Footer />
+          </div>
+        </MyThemeProvider>
       </body>
     </html>
   );

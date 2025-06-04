@@ -1,12 +1,13 @@
 // src/app/page.tsx
 import About from "@/components/main/About";
-import AchievementsComponent from "@/components/main/Achivements";
+import AchievementsComponent from "@/components/main/Achivements"; // Note: Typo "Achivements" vs "Achievements" - ensure consistency
 import ActivitiesComponent from "@/components/main/Activities";
 import FestComponent from "@/components/main/Fest";
 import Hero from "@/components/main/Hero";
-import ProjectsComponent from "@/components/main/Projects"; // Assuming this component exists
+import ProjectsComponent from "@/components/main/Projects";
 
 // --- Type Definitions ---
+// (Your existing type definitions remain the same)
 export interface Project {
   id: number;
   topic: string;
@@ -45,10 +46,9 @@ export interface HomepageData {
 
 async function getHomepageData(): Promise<HomepageData | null> {
   try {
-    // Consider using environment variables for your API URL
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api/homepage/';
     const response = await fetch(apiUrl, {
-      next: { revalidate: 3600 } // Revalidate every hour
+      next: { revalidate: 3600 }
     });
 
     if (!response.ok) {
@@ -74,37 +74,52 @@ export default async function Home() {
 
   if (!homepageData) {
     return (
-      <main className="h-full w-full"> {/* Ensure this main doesn't cause overflow */}
-        <div className="flex flex-col items-center justify-center min-h-screen px-4 text-center"> {/* Added min-h-screen and padding for better error display */}
-          <p className="text-xl text-red-500">Failed to load homepage data.</p>
-          <p className="text-md text-gray-400 mt-2">Please try again later or contact support.</p>
+      <main className="h-full w-full">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[calc(100vh-130px)] py-10 text-center">
+          {/* Adjust min-height based on your Navbar and Footer height */}
+          <p className="text-xl text-destructive dark:text-destructive-foreground font-semibold">
+            Failed to load homepage data.
+          </p>
+          <p className="text-md text-muted-foreground mt-2">
+            Please try again later or contact support.
+          </p>
         </div>
       </main>
     );
   }
 
   return (
-    // This 'main' tag is the primary container for your page content.
-    // It should be full width but not exceed viewport width.
-    // overflow-x-hidden here is a strong measure if its children are misbehaving.
-    <main className="h-full w-full overflow-x-hidden"> {/* ADDED overflow-x-hidden HERE */}
-      <div className="flex flex-col"> {/* This div doesn't need specific width/overflow if 'main' handles it */}
-        <Hero />
-        {/* The negative top margin shifts this block up. Ensure it doesn't cause layout issues with fixed navbars etc. */}
-        <div className="relative z-10 -top-24 sm:-top-32 md:-top-48 lg:-top-64"> {/* Adjusted negative top for responsiveness, added z-index */}
+    <main className="h-full w-full"> {/* Main container, overflow-x-hidden might be better on individual problem sections if needed */}
+      <div className="flex flex-col">
+        <Hero /> {/* Assumed to be full-width or manage its own container */}
+
+        {/* Wrapper for overlapping sections */}
+        {/* The negative top margin is a stylistic choice. Adjust as needed. */}
+        {/* Consider if this overlapping is desired on all screen sizes. */}
+        <div className="relative z-10 -mt-24 sm:-mt-32 md:-mt-40 lg:-mt-48 xl:-mt-56">
+          {/*
+            Each component below should ideally handle its own internal padding (py-*)
+            and use <div className="container mx-auto px-4 sm:px-6 lg:px-8"> for content.
+          */}
           <About />
+
           {homepageData.clubactivity && homepageData.clubactivity.length > 0 && (
             <ActivitiesComponent activities={homepageData.clubactivity} />
           )}
-          <div className="relative -top-16  "> {/* Added z-index to ensure this section is above others if needed */}
-          {homepageData.fests && homepageData.fests.length > 0 && (
-            <FestComponent fests={homepageData.fests} />
-          )}
+
+          {/* The nested div with negative top here might create very complex stacking. */}
+          {/* It might be simpler to manage the spacing between ActivitiesComponent and FestComponent directly. */}
+          {/* For example, ActivitiesComponent could have less bottom padding, or FestComponent more top padding. */}
+          <div className="relative"> {/* Removed -top-16; manage spacing via component padding */}
+            {homepageData.fests && homepageData.fests.length > 0 && (
+              <FestComponent fests={homepageData.fests} />
+            )}
           </div>
 
           {homepageData.projects && homepageData.projects.length > 0 && (
             <ProjectsComponent projects={homepageData.projects} />
           )}
+
           {homepageData.achievements && homepageData.achievements.length > 0 && (
             <AchievementsComponent achievements={homepageData.achievements} />
           )}

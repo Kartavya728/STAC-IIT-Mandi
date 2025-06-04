@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework', # Ensure DRF is listed
 
     # your apps
+    'notification',
     'CoreTeam',
     'Events',
     'tailwind',
