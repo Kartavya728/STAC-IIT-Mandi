@@ -33,7 +33,7 @@ const Navbar = () => {
       ],
     },
     { href: "/notification", label: "Notifications" },
-    { href: "http://stac.iitmandi.co.in/blog/", label: "Blogs", target: "_blank" },
+    { href: "/blogs", label: "Blogs"},
     {
       label: "Gallery",
       href: "#gallery",
@@ -42,7 +42,7 @@ const Navbar = () => {
         { href: "/videos", label: "Videos" },
       ],
     },
-    { href: "\team", label: "Team" },
+    { href: "\tteam", label: "Team" },
     { href: "\alumni", label: "Alumni" },
     { href: "\iau", label: "IAU" },
   ];
@@ -125,13 +125,7 @@ const Navbar = () => {
             className="h-auto w-auto flex flex-row items-center"
             onClick={() => isMobileMenuOpen && setIsMobileMenuOpen(false)}
           >
-            <Image
-              src="/STAClogo.png"
-              alt="logo"
-              width={45}
-              height={45}
-              className="cursor-pointer hover:animate-slowspin"
-            />
+
             <span className="font-bold ml-[10px] hidden md:block text-foreground text-xl">
               STAC
             </span>

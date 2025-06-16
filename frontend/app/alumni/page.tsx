@@ -1,5 +1,8 @@
 // app/alumni/page.tsx
 
+import { Instagram, Linkedin, Mail } from "lucide-react";
+import Link from "next/link";
+
 // ... (Keep existing imports and TeamMemberItem interface)
 // --- Type Definition for Alumni ---
 interface AlumniItem {
@@ -103,13 +106,7 @@ export default async function AlumniPage() {
               className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden flex flex-col items-center p-6 text-center transform transition-all duration-300 hover:scale-105 hover:shadow-sky-500/30"
             >
               <div className="relative w-36 h-36 rounded-full overflow-hidden mb-5 border-4 border-sky-300 dark:border-sky-600">
-                <Image
-                  src={alumnus.image || '/default-avatar.png'} // Provide a fallback avatar
-                  alt={alumnus.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="transition-transform duration-500 group-hover:scale-110"
-                />
+               
               </div>
               <h2 className="text-2xl font-semibold mb-1 text-gray-800 dark:text-white">
                 {alumnus.name}

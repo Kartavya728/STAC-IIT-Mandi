@@ -1,6 +1,7 @@
-// app/videos/page.tsx (or app/gallery/videos/page.tsx)
+// app/videos/page.tsx
 import React from 'react';
-import Link from 'next/link'; // For non-YouTube links or fallback
+import Link from 'next/link';
+import { PlayCircle, AlertTriangle, VideoOff } from 'lucide-react'; // Icons for a better UI
 
 // --- Type Definition for Video ---
 interface VideoItem {
@@ -9,8 +10,8 @@ interface VideoItem {
   link: string; // URL to the video
   description: string | null;
 }
-// --- End Type Definition ---
 
+// --- Data Fetching Function ---
 async function getVideoData(): Promise<VideoItem[] | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
@@ -31,20 +32,15 @@ async function getVideoData(): Promise<VideoItem[] | null> {
       );
       return null;
     }
-
     const data = await response.json();
-
-    if (!Array.isArray(data)) {
-      console.error("Video Gallery data fetched is not an array. Received:", data);
-      return null;
-    }
-    return data as VideoItem[];
+    return Array.isArray(data) ? (data as VideoItem[]) : null;
   } catch (error) {
     console.error("Error fetching or parsing Video Gallery data:", error);
     return null;
   }
 }
 
+// --- Helper Function ---
 // Helper to extract YouTube video ID from various URL formats
 const getYouTubeId = (url: string): string | null => {
   if (!url) return null;
@@ -53,93 +49,111 @@ const getYouTubeId = (url: string): string | null => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
+
+// --- UI Component for Displaying States (Error / Empty) ---
+const StateDisplay = ({ icon, title, message }: { icon: React.ReactNode, title: string, message: string }) => (
+    <div className="flex flex-col items-center justify-center text-center py-20 mt-10 rounded-lg bg-gray-100 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-700">
+      <div className="mb-4">{icon}</div>
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{title}</h2>
+      <p className="mt-2 text-md text-gray-600 dark:text-gray-400 max-w-sm">{message}</p>
+    </div>
+);
+
+
+// --- UI Component for a Single Video Card ---
+const VideoCard = ({ video }: { video: VideoItem }) => {
+    const youtubeId = getYouTubeId(video.link);
+
+    return (
+        <div className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-1.5 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <div className="relative aspect-video w-full">
+            {youtubeId ? (
+              <>
+                {/* Embedded YouTube Player */}
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1&showinfo=0`}
+                  title={video.videoname}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="transition-opacity duration-300"
+                ></iframe>
+                 {/* Play icon overlay on hover */}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <PlayCircle className="h-16 w-16 text-white" />
+                </div>
+              </>
+            ) : (
+              // Fallback for non-YouTube links
+              <div className="flex h-full w-full items-center justify-center rounded-t-xl bg-gray-200 dark:bg-gray-700">
+                <Link href={video.link} target="_blank" rel="noopener noreferrer"
+                   className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline p-4 text-center font-semibold">
+                    <PlayCircle className="h-5 w-5"/>
+                    Watch Video
+                </Link>
+              </div>
+            )}
+          </div>
+          <div className="p-5 md:p-6 flex-grow flex flex-col">
+            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">
+              {video.videoname}
+            </h2>
+            {video.description && (
+              <div
+                className="prose prose-sm max-w-none text-gray-600 dark:text-gray-400 line-clamp-3"
+                dangerouslySetInnerHTML={{ __html: video.description }}
+              />
+            )}
+          </div>
+        </div>
+      );
+}
+
+// --- Main Page Component ---
 export default async function VideosPage() {
   const videos = await getVideoData();
 
-  if (!videos) {
-    return (
-      <main className="h-full w-full">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[calc(100vh-130px)] py-10 text-center">
-          <h1 className="text-4xl font-bold mb-8 text-gray-800 dark:text-gray-100">
-            Video Gallery
-          </h1>
-          <p className="text-xl text-red-600 dark:text-red-400 font-semibold">
-            Failed to load video gallery data.
-          </p>
-          <p className="text-md text-gray-600 dark:text-gray-400 mt-2">
-            Please try again later or contact support.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (videos.length === 0) {
-    return (
-      <main className="h-full w-full">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[calc(100vh-130px)]">
-          <h1 className="text-5xl font-extrabold mb-16 text-center text-gray-800 dark:text-gray-100">
-            Video Gallery
-          </h1>
-          <p className="text-center text-lg text-gray-600 dark:text-gray-400">
-            There are no videos in the gallery at the moment.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="h-full w-full bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h1 className="text-5xl font-extrabold mb-20 text-center text-gray-800 dark:text-gray-100">
-          Video Gallery
+    // Transparent background to inherit from layout. Added top margin via padding.
+    <main className="h-full w-full bg-transparent">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        {/* Page Title with the requested orange-to-yellow gradient theme */}
+        <h1 className="mb-16 md:mb-20 text-center text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
+            Video Gallery
+          </span>
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {videos.map((video) => {
-            const youtubeId = getYouTubeId(video.link);
+
+        {/* Conditional Rendering Logic */}
+        {(() => {
+          if (!videos) {
             return (
-              <div
-                key={video.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden flex flex-col"
-              >
-                {youtubeId ? (
-                  <div className="aspect-video w-full"> {/* 16:9 aspect ratio for videos */}
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
-                      title={video.videoname}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      className="rounded-t-xl"
-                    ></iframe>
-                  </div>
-                ) : (
-                  // Fallback for non-YouTube links or if ID extraction fails
-                  <div className="aspect-video w-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center rounded-t-xl">
-                    <Link href={video.link} target="_blank" rel="noopener noreferrer"
-                       className="text-blue-600 dark:text-blue-400 hover:underline p-4 text-center">
-                        Watch Video: {video.videoname}
-                    </Link>
-                  </div>
-                )}
-                <div className="p-6 flex-grow">
-                  <h2 className="text-2xl font-semibold mb-2 text-gray-900 dark:text-white">
-                    {video.videoname}
-                  </h2>
-                  {video.description && (
-                    <div
-                      className="prose dark:prose-invert prose-sm max-w-none text-gray-700 dark:text-gray-300 line-clamp-3"
-                      dangerouslySetInnerHTML={{ __html: video.description }}
-                    />
-                  )}
-                </div>
-              </div>
+              <StateDisplay
+                icon={<AlertTriangle className="h-16 w-16 text-red-500" />}
+                title="Failed to Load Videos"
+                message="There was an error connecting to the gallery. Please try again later."
+              />
             );
-          })}
-        </div>
+          }
+          if (videos.length === 0) {
+            return (
+              <StateDisplay
+                icon={<VideoOff className="h-16 w-16 text-gray-400" />}
+                title="Gallery is Empty"
+                message="There are no videos in the gallery at the moment. Check back soon!"
+              />
+            );
+          }
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+              {videos.map((video) => (
+                <VideoCard key={video.id} video={video} />
+              ))}
+            </div>
+          );
+        })()}
       </div>
     </main>
   );

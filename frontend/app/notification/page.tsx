@@ -1,7 +1,7 @@
 // app/notifications/page.tsx
 import React from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Bell, Link2, CalendarDays } from 'lucide-react'; // Example icons
+import { AlertTriangle, Bell, Link2, CalendarDays, Archive } from 'lucide-react';
 
 // --- Type Definition for Notification ---
 interface NotificationItem {
@@ -17,12 +17,11 @@ interface NotificationItem {
 async function getNotifications(type: 'active' | 'all'): Promise<NotificationItem[] | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-    const apiUrl = `${baseUrl}/api/notifications/${type}/`; // Dynamic path based on type
+    const apiUrl = `${baseUrl}/api/notifications/${type}/`;
     console.log(`Fetching ${type} notifications from:`, apiUrl);
 
     const response = await fetch(apiUrl, {
-      next: { revalidate: 600 } // Revalidate active notifications more frequently (e.g., every 10 mins)
-                                // For 'all', you might use a longer revalidation or only fetch client-side if it's a huge list
+      next: { revalidate: 600 }, // Revalidate every 10 minutes
     });
 
     if (!response.ok) {
@@ -64,99 +63,117 @@ const formatTimestamp = (isoString: string) => {
   }
 };
 
+// Helper to format a URL for display
+const formatLink = (urlString: string | null): string => {
+  if (!urlString) return '';
+  try {
+    const url = new URL(urlString);
+    // Remove 'www.' from the hostname for brevity
+    return url.hostname.replace(/^www\./, '');
+  } catch (e) {
+    // If URL is malformed, return a snippet of it
+    return urlString.length > 30 ? `${urlString.substring(0, 27)}...` : urlString;
+  }
+};
+
+
+// --- Notification Card Component ---
+const NotificationCard = ({ notification, isActiveCard }: { notification: NotificationItem, isActiveCard: boolean }) => (
+  <div
+    key={notification.id}
+    className={`
+      rounded-xl border shadow-sm p-6 mb-6 transition-all duration-300 group
+      ${isActiveCard
+        ? 'bg-orange-50/50 dark:bg-slate-800/50 border-orange-500/50 dark:border-orange-500/30 border-l-4 hover:shadow-lg hover:border-orange-500'
+        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600'
+      }
+    `}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
+        {notification.title}
+      </h3>
+      {isActiveCard && <Bell size={24} className="text-orange-500 animate-pulse flex-shrink-0" />}
+    </div>
+    <p className="mb-5 text-slate-600 dark:text-slate-400">
+      {notification.message}
+    </p>
+    <div className="flex flex-wrap items-center justify-between text-sm text-slate-500 dark:text-slate-500">
+      <div className="flex items-center">
+        <CalendarDays size={16} className="mr-2" />
+        <span>{formatTimestamp(notification.timestamp)}</span>
+      </div>
+      {notification.link && (
+        <Link
+          href={notification.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 sm:mt-0 flex items-center font-medium text-orange-600 dark:text-orange-400 hover:underline"
+        >
+          <Link2 size={16} className="mr-1.5" />
+          {/* Display a formatted version of the link */}
+          {formatLink(notification.link)}
+        </Link>
+      )}
+    </div>
+  </div>
+);
+
+// --- Main Page Component ---
 export default async function NotificationsPage() {
-  // Fetch both active and all notifications
-  // In a real app, you might fetch active ones for a homepage pop-up
-  // and 'all' for a dedicated notifications page.
   const activeNotifications = await getNotifications('active');
   const allNotifications = await getNotifications('all');
 
-  const renderNotificationCard = (notification: NotificationItem, isActiveCard: boolean = false) => (
-    <div
-      key={notification.id}
-      className={`rounded-lg shadow-lg p-6 mb-6 transition-all duration-300
-        ${isActiveCard
-          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white hover:shadow-indigo-500/50 border-2 border-indigo-400'
-          : 'bg-white dark:bg-gray-800 hover:shadow-xl'
-        }`}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <h2 className={`text-2xl font-semibold ${isActiveCard ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-          {notification.title}
-        </h2>
-        {isActiveCard && <Bell size={28} className="text-yellow-300 animate-pulse" />}
-      </div>
-      <p className={`mb-4 text-base ${isActiveCard ? 'text-indigo-100' : 'text-gray-700 dark:text-gray-300'}`}>
-        {notification.message}
-      </p>
-      <div className="flex flex-wrap items-center justify-between text-sm">
-        <div className={`flex items-center ${isActiveCard ? 'text-indigo-200' : 'text-gray-500 dark:text-gray-400'}`}>
-          <CalendarDays size={16} className="mr-2" />
-          <span>{formatTimestamp(notification.timestamp)}</span>
-        </div>
-        {notification.link && (
-          <Link
-            href={notification.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`mt-2 sm:mt-0 flex items-center font-medium transition-colors duration-200
-              ${isActiveCard
-                ? 'text-yellow-300 hover:text-yellow-200'
-                : 'text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300'
-              }`}
-          >
-            <Link2 size={16} className="mr-1" />
-            Learn More
-          </Link>
-        )}
-      </div>
-    </div>
-  );
-
   return (
-    <main className="h-full w-full bg-gray-100 dark:bg-gray-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h1 className="text-5xl font-extrabold mb-16 text-center text-gray-800 dark:text-gray-100">
+    <main className="h-full w-full bg-transparent">
+      {/* Increased top padding (pt-24) */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+        <h1 className="text-5xl md:text-6xl font-extrabold mb-16 text-center text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-500">
           Notifications
         </h1>
 
         {/* Section for Active Notifications */}
         {activeNotifications && activeNotifications.length > 0 && (
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-8 text-indigo-600 dark:text-indigo-400 flex items-center">
-              <Bell size={30} className="mr-3 text-yellow-500" />
-              Active Alerts & Updates
+            <h2 className="text-3xl font-bold mb-8 text-orange-500 flex items-center">
+              <Bell size={30} className="mr-3" />
+              Active Alerts
             </h2>
-            <div className="space-y-6">
-              {activeNotifications.map(notification => renderNotificationCard(notification, true))}
+            <div className="space-y-4">
+              {activeNotifications.map(notification => (
+                <NotificationCard key={notification.id} notification={notification} isActiveCard={true} />
+              ))}
             </div>
           </section>
         )}
 
         {/* Section for All Notifications */}
         <section>
-          <h2 className="text-3xl font-bold mb-8 text-gray-700 dark:text-gray-300">
+          <h2 className="text-3xl font-bold mb-8 text-slate-700 dark:text-slate-300 flex items-center">
+            <Archive size={30} className="mr-3"/>
             Notification Archive
           </h2>
           {!allNotifications ? (
-            <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="text-center py-12 px-6 bg-white dark:bg-slate-800 rounded-lg border border-red-500/20">
               <AlertTriangle size={48} className="mx-auto text-red-500 mb-4" />
               <p className="text-xl text-red-600 dark:text-red-400 font-semibold">
-                Failed to load all notifications.
+                Failed to load notifications.
               </p>
-              <p className="text-md text-gray-600 dark:text-gray-400 mt-2">
-                Please try again later.
+              <p className="text-md text-slate-600 dark:text-slate-400 mt-2">
+                There was an error connecting to the server. Please try again later.
               </p>
             </div>
           ) : allNotifications.length === 0 ? (
-            <div className="text-center py-10 bg-white dark:bg-gray-800 rounded-lg shadow">
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                No past notifications found.
+            <div className="text-center py-12 px-6 bg-white dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+              <p className="text-lg text-slate-600 dark:text-slate-400">
+                You have no past notifications.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {allNotifications.map(notification => renderNotificationCard(notification, false))}
+              {allNotifications.map(notification => (
+                 <NotificationCard key={notification.id} notification={notification} isActiveCard={false} />
+              ))}
             </div>
           )}
         </section>
